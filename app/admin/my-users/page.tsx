@@ -1,5 +1,6 @@
 "use client";
 
+import { TableSkeleton, Skeleton } from "@/components/ui/Skeleton";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import pb from "@/lib/pocketbase";
@@ -152,26 +153,42 @@ export default function MyUsers() {
             filter: `user = "${deleteId}"`
           });
           for (const record of studentRecords) {
-            await pb.collection("students").delete(record.id);
+            try{
+              await pb.collection("students").delete(record.id);
+            }catch(e){
+              console.log("STUDENT DELETE FAILED",e);
+            }
           }
         } else if (user.role === 'faculty') {
           const facultyRecords = await pb.collection("faculty").getFullList({
             filter: `user = "${deleteId}"`
           });
           for (const record of facultyRecords) {
+            try{
             await pb.collection("faculty").delete(record.id);
+            }catch(e){
+            console.log("FACULTY DELETE FAILED",e);
+            }
           }
         } else if (user.role === 'recruiter') {
           const recruiterRecords = await pb.collection("recruiter").getFullList({
             filter: `user = "${deleteId}"`
           });
           for (const record of recruiterRecords) {
+            try{
             await pb.collection("recruiter").delete(record.id);
+            }catch(e){
+            console.log("RECRUITER DELETE FAILED",e);
+            }
           }
         }
       }
 
+      try{
       await pb.collection("users").delete(deleteId);
+      }catch(e){
+      console.log("USER DELETE FAILED",e);
+      }
       setUsers(users.filter(u => u.id !== deleteId));
       setDeleteId(null);
     } catch (err: unknown) {
@@ -360,12 +377,23 @@ export default function MyUsers() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="animate-spin h-12 w-12 text-blue-600" />
+  return (
+    <div className="space-y-6">
+      {/* Header skeleton */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-28 rounded-lg" />
+          <Skeleton className="h-10 w-32 rounded-lg" />
+        </div>
       </div>
-    );
-  }
+      <TableSkeleton rows={5} />
+    </div>
+  );
+}
 
   return (
     <div className="space-y-6">
@@ -533,10 +561,10 @@ export default function MyUsers() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm dark:shadow-gray-900/20 border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-4 py-4 text-left">
                   <input
@@ -582,7 +610,7 @@ export default function MyUsers() {
                 </tr>
               ) : (
                 paginatedUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                     <td className="px-4 py-4">
                       <input
                         type="checkbox"
@@ -597,8 +625,8 @@ export default function MyUsers() {
                           {getRoleIcon(user.role)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
+                          <p className="font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
                         </div>
                       </div>
                     </td>

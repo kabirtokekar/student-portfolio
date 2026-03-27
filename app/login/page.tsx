@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import pb from "@/lib/pocketbase";
 import { 
   Mail, 
@@ -11,29 +11,92 @@ import {
   Shield, 
   AlertCircle,
   Loader2,
-  GraduationCap
+  GraduationCap,
+  Users,
+  Briefcase,
+  ArrowLeft,
+  UserCog
 } from "lucide-react";
+
+interface RoleConfig {
+  title: string;
+  subtitle: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+}
+
+const roleConfigs: Record<string, RoleConfig> = {
+  student: {
+    title: "Student Login",
+    subtitle: "Access your portfolio, achievements, and academic records",
+    icon: GraduationCap,
+    color: "text-blue-600",
+    bgColor: "bg-blue-100",
+    borderColor: "border-blue-200"
+  },
+  staff: {
+    title: "Faculty Login",
+    subtitle: "Manage student records and verification processes",
+    icon: Users,
+    color: "text-emerald-600",
+    bgColor: "bg-emerald-100",
+    borderColor: "border-emerald-200"
+  },
+  recruiter: {
+    title: "Recruiter Login",
+    subtitle: "Verify credentials and explore student portfolios",
+    icon: Briefcase,
+    color: "text-violet-600",
+    bgColor: "bg-violet-100",
+    borderColor: "border-violet-200"
+  },
+  admin: {
+    title: "Admin Login",
+    subtitle: "System administration and management",
+    icon: UserCog,
+    color: "text-amber-600",
+    bgColor: "bg-amber-100",
+    borderColor: "border-amber-200"
+  },
+  super_admin: {
+    title: "Super Admin Login",
+    subtitle: "Full system control and configuration",
+    icon: Shield,
+    color: "text-red-600",
+    bgColor: "bg-red-100",
+    borderColor: "border-red-200"
+  }
+};
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Get role from URL query param
+  const role = searchParams.get("role") || "student";
+  const config = roleConfigs[role] || roleConfigs.student;
+
   // Check if already logged in
   useEffect(() => {
     if (pb.authStore.isValid) {
-      const role = pb.authStore.model?.role;
-      if (role === "super_admin") {
+      const userRole = pb.authStore.model?.role;
+      if (userRole === "super_admin") {
         router.replace("/superadmin");
-      } else if (role === "admin") {
+      } else if (userRole === "admin") {
         router.replace("/admin");
-      } else if (role === "student") {
+      } else if (userRole === "student") {
         router.replace("/student");
-      } else if (role === "faculty") {
+      } else if (userRole === "faculty") {
         router.replace("/faculty");
+      } else if (userRole === "recruiter") {
+        router.replace("/recruiter");
       }
     }
   }, [router]);
@@ -92,9 +155,20 @@ export default function Login() {
     }
   };
 
+  const Icon = config.icon;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Back Button */}
+        <button
+          onClick={() => router.push("/")}
+          className="mb-6 flex items-center gap-2 text-white/80 hover:text-white transition-colors group"
+        >
+          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-medium">Back to Home</span>
+        </button>
+
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-white/10 backdrop-blur-lg rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/20 shadow-2xl">
@@ -106,15 +180,15 @@ export default function Login() {
 
         {/* Login Card */}
         <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 overflow-hidden">
-          {/* Header */}
-          <div className="bg-gray-50/50 px-8 py-6 border-b border-gray-100">
+          {/* Header - Role Specific */}
+          <div className={`px-8 py-6 border-b ${config.borderColor} ${config.bgColor}/50`}>
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Shield size={20} className="text-blue-600" />
+              <div className={`p-2 ${config.bgColor} rounded-lg`}>
+                <Icon size={24} className={config.color} />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Welcome Back</h2>
-                <p className="text-sm text-gray-500">Sign in to your account</p>
+                <h2 className="text-xl font-bold text-gray-900">{config.title}</h2>
+                <p className="text-sm text-gray-500">{config.subtitle}</p>
               </div>
             </div>
           </div>
@@ -122,7 +196,7 @@ export default function Login() {
           {/* Form */}
           <div className="p-8">
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 animate-shake">
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
                 <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
                 <p className="text-sm text-red-700">{error}</p>
               </div>

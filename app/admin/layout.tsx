@@ -1,5 +1,7 @@
 "use client";
 
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Skeleton } from "@/components/ui/Skeleton";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
@@ -97,7 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Prevent hydration mismatch
   if (!mounted) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="w-64 bg-blue-900" />
         <main className="flex-1" />
       </div>
@@ -106,25 +108,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // If no user, show loading or error
   if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        {authError ? (
-          <div className="text-center p-6">
-            <AlertCircle className="mx-auto mb-4 text-red-500" size={48} />
-            <p className="text-red-600 mb-4">{authError}</p>
-            <button 
-              onClick={() => router.push("/login")}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-            >
-              Go to Login
-            </button>
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar skeleton */}
+      <div className="w-64 bg-blue-900 p-6 hidden lg:block">
+        <div className="flex items-center gap-3 mb-8">
+          <Skeleton className="w-10 h-10 bg-blue-800 rounded-lg" />
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-32 bg-blue-800" />
+            <Skeleton className="h-3 w-24 bg-blue-800" />
           </div>
-        ) : (
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
-        )}
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full bg-blue-800 rounded-lg" />
+          <Skeleton className="h-10 w-full bg-blue-800 rounded-lg" />
+          <Skeleton className="h-10 w-full bg-blue-800 rounded-lg" />
+        </div>
       </div>
-    );
-  }
+      
+      {/* Main content loading */}
+      <div className="flex-1 p-8 space-y-6">
+        <Skeleton className="h-8 w-48 mb-6" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Skeleton className="h-32 rounded-xl" />
+          <Skeleton className="h-32 rounded-xl" />
+          <Skeleton className="h-32 rounded-xl" />
+        </div>
+        <Skeleton className="h-64 rounded-xl" />
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -138,10 +152,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-blue-900 text-white flex flex-col shadow-xl
+        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-blue-900 dark:bg-gray-950 text-white flex flex-col shadow-xl
         transform transition-transform duration-300 ease-in-out
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+`     }>
         <div className="p-6 border-b border-blue-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
@@ -225,8 +239,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ))}
         </nav>
 
-        <div className="p-4 border-t border-blue-800">
-          <div className="mb-4 p-3 bg-blue-800/50 rounded-lg">
+        <div className="p-4 border-t border-blue-800 dark:border-gray-800">
+          <div className="mb-4 p-3 bg-blue-800/50 dark:bg-gray-800/50 rounded-lg">
             <p className="font-medium text-sm truncate">{user?.name || 'Admin'}</p>
             <p className="text-xs text-blue-300 truncate">{user?.email}</p>
             <span className="inline-block mt-2 px-2 py-0.5 bg-blue-700 rounded text-xs capitalize">
@@ -244,16 +258,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       <main className="flex-1 min-w-0">
-        <header className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <header className="lg:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setMobileMenuOpen(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
             >
-              <Menu size={24} className="text-gray-700" />
+            <Menu size={24} className="text-gray-700 dark:text-gray-300" />
             </button>
-            <span className="font-bold text-gray-900">Admin Panel</span>
+            <span className="font-bold text-gray-900 dark:text-white">Admin Panel</span>
           </div>
+          <ThemeToggle />
         </header>
 
         <header className="hidden lg:block bg-white border-b border-gray-200 px-8 py-4 sticky top-0 z-40">
@@ -271,7 +286,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+            <ThemeToggle />
+              <span className="text-sm text-gray-500 bg-gray-100 dark:bg-gray-800 dark:text-gray-400 px-3 py-1 rounded-full border border-gray-200 dark:border-gray-700">
                 {new Date().toLocaleDateString("en-IN", { 
                   weekday: "short", day: "numeric", month: "short", year: "numeric" 
                 })}

@@ -244,7 +244,7 @@ export default function CreateStudent() {
         <ArrowLeft size={20} /> Back to Dashboard
       </Link>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm dark:shadow-gray-900/20 border border-gray-200 dark:border-gray-800 overflow-hidden">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">Add New Student</h2>
           <p className="text-gray-600 mt-1">Create a student account for your department</p>
@@ -252,7 +252,7 @@ export default function CreateStudent() {
 
         {isLimited && (
           <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700 text-sm">
+            <p className="text-red-700 dark:text-red-400 text-sm">
               Too many attempts. Please wait {Math.ceil(timeRemaining / 1000)} seconds before trying again.
             </p>
           </div>
